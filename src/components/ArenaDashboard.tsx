@@ -6,6 +6,9 @@ import { Progress } from "./ui/progress";
 import { motion } from "framer-motion";
 import { BattleArena } from "./battle/BattleArena";
 import { useState } from "react";
+import { FriendsList } from "./social/FriendsList";
+import { ChatBox } from "./social/ChatBox";
+import { toast } from "sonner";
 
 const container = {
   hidden: { opacity: 0 },
@@ -133,6 +136,12 @@ export function ArenaDashboard() {
           </CardContent>
         </Card>
       </motion.div>
+      
+      {/* Social Features Section */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <FriendsList />
+        <ChatBox />
+      </div>
       
       {/* Quick Actions */}
       <motion.div 
