@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Fire, Droplets, Mountain, Cog, Trees } from "lucide-react";
+import { Flame, Droplet, Mountain, Settings, TreePine } from "lucide-react";
 import { ElementCard } from "@/components/ElementCard";
 import { ArenaDashboard } from "@/components/ArenaDashboard";
 import { toast } from "sonner";
@@ -9,13 +9,13 @@ const elements = [
     name: "Fire",
     description: "Bold, passionate, and dramatic styles that command attention",
     gradient: "fire-gradient",
-    icon: Fire
+    icon: Flame
   },
   {
     name: "Water",
     description: "Fluid, elegant, and adaptable fashion choices",
     gradient: "water-gradient",
-    icon: Droplets
+    icon: Droplet
   },
   {
     name: "Earth",
@@ -27,13 +27,13 @@ const elements = [
     name: "Metal",
     description: "Sleek, modern, and precisely crafted looks",
     gradient: "metal-gradient",
-    icon: Cog
+    icon: Settings
   },
   {
     name: "Wood",
     description: "Natural, organic, and harmonious style elements",
     gradient: "wood-gradient",
-    icon: Trees
+    icon: TreePine
   }
 ];
 
