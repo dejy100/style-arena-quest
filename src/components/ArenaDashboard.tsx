@@ -1,9 +1,11 @@
-import { Trophy, Gamepad, Calendar, User, Target, Flame, Medal, ChartBar } from "lucide-react";
+import { Trophy, Gamepad, Calendar, Target, Flame, Medal, ChartBar } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Progress } from "./ui/progress";
 import { motion } from "framer-motion";
+import { BattleArena } from "./battle/BattleArena";
+import { useState } from "react";
 
 const container = {
   hidden: { opacity: 0 },
@@ -21,6 +23,12 @@ const item = {
 };
 
 export function ArenaDashboard() {
+  const [showBattle, setShowBattle] = useState(false);
+
+  if (showBattle) {
+    return <BattleArena />;
+  }
+
   return (
     <div className="space-y-8 p-6">
       <motion.div 
@@ -138,7 +146,13 @@ export function ArenaDashboard() {
             <div className="flex flex-col items-center gap-4">
               <Gamepad size={32} className="text-primary" />
               <h2 className="text-xl font-semibold">Quick Battle</h2>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => {
+                  setShowBattle(true);
+                  toast.success("Entering battle arena!");
+                }}
+              >
                 Start Battle
                 <Badge variant="secondary" className="ml-2">2min</Badge>
               </Button>
