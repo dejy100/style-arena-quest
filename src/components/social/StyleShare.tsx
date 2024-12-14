@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Share, Heart, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Style {
   id: string;
@@ -37,7 +37,7 @@ export function StyleShare() {
   const handleLike = async (styleId: string) => {
     try {
       const { data, error } = await supabase
-        .from('style_reactions')
+        .from('reactions')
         .insert([{ style_id: styleId, type: 'like' }]);
       
       if (error) throw error;

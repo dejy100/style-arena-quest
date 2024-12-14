@@ -9,7 +9,88 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          style_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          style_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          style_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reactions: {
+        Row: {
+          created_at: string
+          id: string
+          style_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          style_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          style_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reactions_style_id_fkey"
+            columns: ["style_id"]
+            isOneToOne: false
+            referencedRelation: "styles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      styles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          likes_count: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          likes_count?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
