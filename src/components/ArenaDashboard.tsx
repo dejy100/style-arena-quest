@@ -11,6 +11,7 @@ import { AvatarCustomizer } from "./customization/AvatarCustomizer";
 import { StylePresets } from "./customization/StylePresets";
 import { ElementFusion } from "./customization/ElementFusion";
 import { WardrobeManager } from "./customization/WardrobeManager";
+import { AchievementTracker } from "./achievements/AchievementTracker";
 
 const container = {
   hidden: { opacity: 0 },
@@ -40,7 +41,11 @@ export function ArenaDashboard() {
         <p className="mt-2 text-muted-foreground">Ready to showcase your style?</p>
       </motion.div>
       
-      <UserStats />
+      <div className="grid gap-6 md:grid-cols-2">
+        <UserStats />
+        <AchievementTracker />
+      </div>
+      
       <DailyChallenges />
       
       <div className="grid gap-6 md:grid-cols-2">
