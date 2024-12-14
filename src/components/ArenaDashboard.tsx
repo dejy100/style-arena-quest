@@ -7,6 +7,10 @@ import { QuickActions } from "./dashboard/QuickActions";
 import { FriendsList } from "./social/FriendsList";
 import { ChatBox } from "./social/ChatBox";
 import { StyleShare } from "./social/StyleShare";
+import { AvatarCustomizer } from "./customization/AvatarCustomizer";
+import { StylePresets } from "./customization/StylePresets";
+import { ElementFusion } from "./customization/ElementFusion";
+import { WardrobeManager } from "./customization/WardrobeManager";
 
 const container = {
   hidden: { opacity: 0 },
@@ -38,6 +42,17 @@ export function ArenaDashboard() {
       
       <UserStats />
       <DailyChallenges />
+      
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-6">
+          <AvatarCustomizer />
+          <StylePresets />
+        </div>
+        <div className="space-y-6">
+          <ElementFusion />
+          <WardrobeManager />
+        </div>
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2">
         <StyleShare />
