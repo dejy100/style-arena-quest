@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Star, Award, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 interface Achievement {
   id: string;
@@ -15,45 +17,81 @@ interface Achievement {
   unlocked: boolean;
 }
 
+const iconMap: { [key: string]: any } = {
+  Trophy,
+  Star,
+  Award,
+  Crown,
+};
+
+const fetchAchievements = async () => {
+  const { data: achievements, error } = await supabase
+    .from('achievements')
+    .select('*');
+
+  if (error) {
+    toast.error('Failed to fetch achievements');
+    throw error;
+  }
+
+  const { data: userAchievements, error: userError } = await supabase
+    .from('user_achievements')
+    .select('*')
+    .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+
+  if (userError) {
+    toast.error('Failed to fetch user achievements');
+    throw userError;
+  }
+
+  return achievements.map((achievement) => {
+    const userAchievement = userAchievements?.find(
+      (ua) => ua.achievement_id === achievement.id
+    );
+    
+    return {
+      id: achievement.id,
+      title: achievement.title,
+      description: achievement.description,
+      progress: userAchievement?.progress || 0,
+      total: achievement.total,
+      icon: iconMap[achievement.icon],
+      unlocked: userAchievement?.unlocked || false,
+    };
+  });
+};
+
 export function AchievementTracker() {
-  const [achievements] = useState<Achievement[]>([
-    {
-      id: "1",
-      title: "Style Novice",
-      description: "Win your first style battle",
-      progress: 0,
-      total: 1,
-      icon: Trophy,
-      unlocked: false
-    },
-    {
-      id: "2",
-      title: "Element Master",
-      description: "Successfully fuse 10 elements",
-      progress: 3,
-      total: 10,
-      icon: Star,
-      unlocked: false
-    },
-    {
-      id: "3",
-      title: "Trendsetter",
-      description: "Get 50 likes on your styles",
-      progress: 12,
-      total: 50,
-      icon: Award,
-      unlocked: false
-    },
-    {
-      id: "4",
-      title: "Style Icon",
-      description: "Create 20 unique outfits",
-      progress: 5,
-      total: 20,
-      icon: Crown,
-      unlocked: false
-    }
-  ]);
+  const { data: achievements, isLoading, error } = useQuery({
+    queryKey: ['achievements'],
+    queryFn: fetchAchievements,
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Loading Achievements...
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-red-500">
+            <Trophy className="h-5 w-5" />
+            Failed to load achievements
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -65,7 +103,7 @@ export function AchievementTracker() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {achievements.map((achievement) => (
+          {achievements?.map((achievement) => (
             <motion.div
               key={achievement.id}
               initial={{ opacity: 0, y: 20 }}
