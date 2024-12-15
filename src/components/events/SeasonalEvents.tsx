@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { EventLeaderboard } from "./EventLeaderboard";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 export function SeasonalEvents() {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
@@ -31,9 +32,18 @@ export function SeasonalEvents() {
   });
 
   const handleParticipate = async (eventId: string) => {
+    const { data: session } = await supabase.auth.getSession();
+    if (!session?.session?.user) {
+      toast.error("Please sign in to participate");
+      return;
+    }
+
     const { error } = await supabase
       .from("event_participants")
-      .insert([{ event_id: eventId }]);
+      .insert([{ 
+        event_id: eventId,
+        user_id: session.session.user.id
+      }]);
 
     if (error) {
       if (error.code === "23505") {

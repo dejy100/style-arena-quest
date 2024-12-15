@@ -14,10 +14,10 @@ interface Outfit {
 }
 
 export function BattleArena() {
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(120);
   const [outfits, setOutfits] = useState<Outfit[]>([
-    { id: "1", playerName: "Player 1", votes: 0 },
-    { id: "2", playerName: "Player 2", votes: 0 },
+    { id: "123e4567-e89b-12d3-a456-426614174000", playerName: "Player 1", votes: 0 },
+    { id: "123e4567-e89b-12d3-a456-426614174001", playerName: "Player 2", votes: 0 },
   ]);
   const [hasVoted, setHasVoted] = useState(false);
 

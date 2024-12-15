@@ -71,9 +71,9 @@ export function AchievementTracker() {
     queryKey: ['achievements'],
     queryFn: fetchAchievements,
     retry: 1,
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
+    meta: {
+      errorMessage: 'Failed to fetch achievements'
+    }
   });
 
   if (isLoading) {
