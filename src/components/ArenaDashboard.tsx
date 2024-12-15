@@ -12,6 +12,7 @@ import { StylePresets } from "./customization/StylePresets";
 import { ElementFusion } from "./customization/ElementFusion";
 import { WardrobeManager } from "./customization/WardrobeManager";
 import { AchievementTracker } from "./achievements/AchievementTracker";
+import { SeasonalEvents } from "./events/SeasonalEvents";
 
 const container = {
   hidden: { opacity: 0 },
@@ -45,6 +46,8 @@ export function ArenaDashboard() {
         <UserStats />
         <AchievementTracker />
       </div>
+      
+      <SeasonalEvents />
       
       <DailyChallenges />
       

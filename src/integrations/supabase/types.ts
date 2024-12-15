@@ -65,6 +65,38 @@ export type Database = {
           },
         ]
       }
+      event_participants: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reactions: {
         Row: {
           created_at: string
@@ -93,6 +125,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seasonal_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          rewards: Json | null
+          start_date: string
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          rewards?: Json | null
+          start_date: string
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          rewards?: Json | null
+          start_date?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
       }
       styles: {
         Row: {
