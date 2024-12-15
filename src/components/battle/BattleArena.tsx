@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Timer, Crown, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Outfit {
   id: string;
@@ -20,19 +21,55 @@ export function BattleArena() {
   ]);
   const [hasVoted, setHasVoted] = useState(false);
 
-  const handleVote = (outfitId: string) => {
+  useEffect(() => {
+    // Subscribe to real-time updates for votes
+    const channel = supabase
+      .channel('battle-votes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'reactions'
+        },
+        (payload) => {
+          const { style_id } = payload.new;
+          setOutfits(currentOutfits =>
+            currentOutfits.map(outfit =>
+              outfit.id === style_id
+                ? { ...outfit, votes: outfit.votes + 1 }
+                : outfit
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleVote = async (outfitId: string) => {
     if (hasVoted) {
       toast.error("You've already voted!");
       return;
     }
 
-    setOutfits(outfits.map(outfit => 
-      outfit.id === outfitId 
-        ? { ...outfit, votes: outfit.votes + 1 }
-        : outfit
-    ));
-    setHasVoted(true);
-    toast.success("Vote submitted!");
+    try {
+      const { error } = await supabase
+        .from('reactions')
+        .insert([
+          { style_id: outfitId, type: 'vote' }
+        ]);
+
+      if (error) throw error;
+
+      setHasVoted(true);
+      toast.success("Vote submitted!");
+    } catch (error) {
+      toast.error("Failed to submit vote");
+    }
   };
 
   // Calculate total votes and percentages
@@ -73,7 +110,6 @@ export function BattleArena() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Placeholder for outfit image */}
                 <div className="bg-gray-200 aspect-square rounded-lg flex items-center justify-center">
                   <span className="text-gray-500">Outfit Preview</span>
                 </div>

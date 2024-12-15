@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Share, Heart, MessageCircle } from "lucide-react";
@@ -7,47 +7,77 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Style {
   id: string;
-  userId: string;
   title: string;
   description: string;
-  likes: number;
-  comments: number;
+  likes_count: number;
 }
 
 export function StyleShare() {
-  const [styles, setStyles] = useState<Style[]>([
-    {
-      id: "1",
-      userId: "user1",
-      title: "Summer Vibes",
-      description: "Perfect for those hot summer days",
-      likes: 42,
-      comments: 12,
-    },
-    {
-      id: "2",
-      userId: "user2",
-      title: "Urban Street",
-      description: "Modern street style with an edge",
-      likes: 38,
-      comments: 8,
-    },
-  ]);
+  const [styles, setStyles] = useState<Style[]>([]);
+
+  useEffect(() => {
+    // Fetch initial styles
+    fetchStyles();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('style-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'styles'
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setStyles(current => [...current, payload.new as Style]);
+          } else if (payload.eventType === 'UPDATE') {
+            setStyles(current =>
+              current.map(style =>
+                style.id === payload.new.id ? { ...style, ...payload.new } : style
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchStyles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('styles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setStyles(data || []);
+    } catch (error) {
+      toast.error("Failed to fetch styles");
+    }
+  };
 
   const handleLike = async (styleId: string) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('reactions')
         .insert([{ style_id: styleId, type: 'like' }]);
       
       if (error) throw error;
-      toast.success("Style liked!");
       
+      // Update local state optimistically
       setStyles(styles.map(style => 
         style.id === styleId 
-          ? { ...style, likes: style.likes + 1 }
+          ? { ...style, likes_count: (style.likes_count || 0) + 1 }
           : style
       ));
+      
+      toast.success("Style liked!");
     } catch (error) {
       toast.error("Failed to like style");
     }
@@ -82,15 +112,14 @@ export function StyleShare() {
                   onClick={() => handleLike(style.id)}
                 >
                   <Heart className="h-4 w-4 mr-2" />
-                  {style.likes}
+                  {style.likes_count || 0}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleComment(style.id)}
                 >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  {style.comments}
+                  <MessageCircle className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
