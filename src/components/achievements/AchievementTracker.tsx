@@ -25,23 +25,28 @@ const iconMap: { [key: string]: any } = {
 };
 
 const fetchAchievements = async () => {
-  const { data: achievements, error } = await supabase
+  const { data: session } = await supabase.auth.getSession();
+  if (!session?.session?.user) {
+    return [];
+  }
+
+  const { data: achievements, error: achievementsError } = await supabase
     .from('achievements')
     .select('*');
 
-  if (error) {
-    toast.error('Failed to fetch achievements');
-    throw error;
+  if (achievementsError) {
+    console.error('Failed to fetch achievements:', achievementsError);
+    throw new Error('Failed to fetch achievements');
   }
 
   const { data: userAchievements, error: userError } = await supabase
     .from('user_achievements')
     .select('*')
-    .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+    .eq('user_id', session.session.user.id);
 
   if (userError) {
-    toast.error('Failed to fetch user achievements');
-    throw userError;
+    console.error('Failed to fetch user achievements:', userError);
+    throw new Error('Failed to fetch user achievements');
   }
 
   return achievements.map((achievement) => {
@@ -65,6 +70,10 @@ export function AchievementTracker() {
   const { data: achievements, isLoading, error } = useQuery({
     queryKey: ['achievements'],
     queryFn: fetchAchievements,
+    retry: 1,
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
   });
 
   if (isLoading) {
@@ -93,6 +102,19 @@ export function AchievementTracker() {
     );
   }
 
+  if (!achievements?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            No achievements available
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -103,7 +125,7 @@ export function AchievementTracker() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {achievements?.map((achievement) => (
+          {achievements.map((achievement) => (
             <motion.div
               key={achievement.id}
               initial={{ opacity: 0, y: 20 }}
