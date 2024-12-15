@@ -14,15 +14,30 @@ interface Outfit {
 }
 
 export function BattleArena() {
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
   const [outfits, setOutfits] = useState<Outfit[]>([
     { id: "123e4567-e89b-12d3-a456-426614174000", playerName: "Player 1", votes: 0 },
     { id: "123e4567-e89b-12d3-a456-426614174001", playerName: "Player 2", votes: 0 },
   ]);
   const [hasVoted, setHasVoted] = useState(false);
+  const [battleEnded, setBattleEnded] = useState(false);
 
+  // Timer countdown effect
   useEffect(() => {
-    // Subscribe to real-time updates for votes
+    if (timeLeft <= 0) {
+      setBattleEnded(true);
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // Subscribe to real-time updates for votes
+  useEffect(() => {
     const channel = supabase
       .channel('battle-votes')
       .on(
@@ -56,6 +71,11 @@ export function BattleArena() {
       return;
     }
 
+    if (battleEnded) {
+      toast.error("The battle has ended!");
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('reactions')
@@ -78,6 +98,15 @@ export function BattleArena() {
     return totalVotes === 0 ? 0 : (votes / totalVotes) * 100;
   };
 
+  // Find the winner
+  const getWinner = () => {
+    if (!battleEnded) return null;
+    const maxVotes = Math.max(...outfits.map(o => o.votes));
+    return outfits.find(o => o.votes === maxVotes);
+  };
+
+  const winner = getWinner();
+
   return (
     <div className="p-6 space-y-6">
       <motion.div 
@@ -91,6 +120,20 @@ export function BattleArena() {
           <span>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
         </div>
       </motion.div>
+
+      {battleEnded && winner && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center p-4 bg-yellow-100 rounded-lg"
+        >
+          <h2 className="text-2xl font-bold text-yellow-800 flex items-center justify-center gap-2">
+            <Crown className="w-8 h-8 text-yellow-500" />
+            {winner.playerName} Wins!
+          </h2>
+          <p className="text-yellow-700 mt-2">With {winner.votes} votes</p>
+        </motion.div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {outfits.map((outfit) => (
@@ -124,16 +167,16 @@ export function BattleArena() {
 
                 <Button 
                   onClick={() => handleVote(outfit.id)}
-                  disabled={hasVoted}
+                  disabled={hasVoted || battleEnded}
                   className="w-full"
-                  variant={hasVoted ? "secondary" : "default"}
+                  variant={hasVoted || battleEnded ? "secondary" : "default"}
                 >
                   {hasVoted ? (
                     <ThumbsDown className="mr-2 h-4 w-4" />
                   ) : (
                     <ThumbsUp className="mr-2 h-4 w-4" />
                   )}
-                  Vote
+                  {battleEnded ? "Battle Ended" : "Vote"}
                 </Button>
               </CardContent>
             </Card>
