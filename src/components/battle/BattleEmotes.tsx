@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, ThumbsUp, Star, Party, Trophy } from "lucide-react";
+import { Heart, ThumbsUp, Star, Sparkles, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -8,7 +8,7 @@ const emotes = [
   { type: "heart", icon: Heart, color: "text-red-500" },
   { type: "like", icon: ThumbsUp, color: "text-blue-500" },
   { type: "star", icon: Star, color: "text-yellow-500" },
-  { type: "party", icon: Party, color: "text-purple-500" },
+  { type: "sparkle", icon: Sparkles, color: "text-purple-500" },
   { type: "trophy", icon: Trophy, color: "text-green-500" },
 ];
 
@@ -45,10 +45,20 @@ export function BattleEmotes({ battleId }: BattleEmotesProps) {
 
   const sendEmote = async (type: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("You must be logged in to send emotes");
+        return;
+      }
+
       const { error } = await supabase
         .from('battle_emotes')
         .insert([
-          { battle_id: battleId, emote_type: type }
+          { 
+            battle_id: battleId, 
+            emote_type: type,
+            user_id: user.id
+          }
         ]);
 
       if (error) throw error;

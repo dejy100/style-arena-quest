@@ -13,9 +13,18 @@ export function BattleSpectators({ battleId }: BattleSpectatorsProps) {
   useEffect(() => {
     const joinAsSpectator = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log("User not authenticated");
+          return;
+        }
+
         const { error } = await supabase
           .from('battle_spectators')
-          .insert([{ battle_id: battleId }]);
+          .insert([{ 
+            battle_id: battleId,
+            user_id: user.id
+          }]);
 
         if (error) throw error;
       } catch (error) {
