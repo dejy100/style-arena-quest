@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Timer, Crown, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Timer, Crown, ThumbsUp, ThumbsDown, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { MatchMaking } from "./MatchMaking";
 
 interface Outfit {
   id: string;
   playerName: string;
   votes: number;
+  imageUrl: string;
 }
 
 export function BattleArena() {
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
+  const [showMatchmaking, setShowMatchmaking] = useState(true);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [outfits, setOutfits] = useState<Outfit[]>([
-    { id: "123e4567-e89b-12d3-a456-426614174000", playerName: "Player 1", votes: 0 },
-    { id: "123e4567-e89b-12d3-a456-426614174001", playerName: "Player 2", votes: 0 },
+    { 
+      id: "123e4567-e89b-12d3-a456-426614174000", 
+      playerName: "Player 1", 
+      votes: 0,
+      imageUrl: "https://placehold.co/400x600/png"
+    },
+    { 
+      id: "123e4567-e89b-12d3-a456-426614174001", 
+      playerName: "Player 2", 
+      votes: 0,
+      imageUrl: "https://placehold.co/400x600/png"
+    },
   ]);
   const [hasVoted, setHasVoted] = useState(false);
   const [battleEnded, setBattleEnded] = useState(false);
@@ -92,6 +105,11 @@ export function BattleArena() {
     }
   };
 
+  const handleMatchFound = (matchId: string) => {
+    console.log("Match found:", matchId);
+    setShowMatchmaking(false);
+  };
+
   // Calculate total votes and percentages
   const totalVotes = outfits.reduce((sum, outfit) => sum + outfit.votes, 0);
   const getVotePercentage = (votes: number) => {
@@ -107,6 +125,10 @@ export function BattleArena() {
 
   const winner = getWinner();
 
+  if (showMatchmaking) {
+    return <MatchMaking onMatchFound={handleMatchFound} />;
+  }
+
   return (
     <div className="p-6 space-y-6">
       <motion.div 
@@ -114,6 +136,15 @@ export function BattleArena() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center"
       >
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowMatchmaking(true)}
+          className="absolute left-4 top-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Leave Battle
+        </Button>
         <h1 className="text-4xl font-bold mb-2">Style Battle</h1>
         <div className="flex items-center justify-center gap-2 text-xl">
           <Timer className="w-6 h-6" />
@@ -153,8 +184,12 @@ export function BattleArena() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-gray-200 aspect-square rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Outfit Preview</span>
+                <div className="aspect-[2/3] rounded-lg overflow-hidden">
+                  <img 
+                    src={outfit.imageUrl} 
+                    alt={`${outfit.playerName}'s outfit`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
                 <div className="space-y-2">
