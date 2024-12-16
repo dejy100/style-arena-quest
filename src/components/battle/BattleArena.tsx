@@ -6,6 +6,8 @@ import { BattleHeader } from "./BattleHeader";
 import { BattleWinner } from "./BattleWinner";
 import { BattleOutfitCard } from "./BattleOutfitCard";
 import { BattleRewards } from "./BattleRewards";
+import { BattleEmotes } from "./BattleEmotes";
+import { BattleSpectators } from "./BattleSpectators";
 
 interface Outfit {
   id: string;
@@ -17,6 +19,7 @@ interface Outfit {
 export function BattleArena() {
   const [showMatchmaking, setShowMatchmaking] = useState(true);
   const [timeLeft, setTimeLeft] = useState(120);
+  const [battleId, setBattleId] = useState<string>("");
   const [outfits, setOutfits] = useState<Outfit[]>([
     { 
       id: "123e4567-e89b-12d3-a456-426614174000", 
@@ -37,6 +40,7 @@ export function BattleArena() {
   useEffect(() => {
     if (timeLeft <= 0) {
       setBattleEnded(true);
+      saveBattleHistory();
       return;
     }
 
@@ -46,6 +50,30 @@ export function BattleArena() {
 
     return () => clearInterval(timer);
   }, [timeLeft]);
+
+  const saveBattleHistory = async () => {
+    const winner = getWinner();
+    if (!winner) return;
+
+    const loser = outfits.find(o => o.id !== winner.id);
+    if (!loser) return;
+
+    try {
+      const { error } = await supabase
+        .from('battle_history')
+        .insert([{
+          winner_id: winner.id,
+          loser_id: loser.id,
+          winner_votes: winner.votes,
+          loser_votes: loser.votes,
+          battle_duration: 120 - timeLeft
+        }]);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Failed to save battle history:", error);
+    }
+  };
 
   useEffect(() => {
     const channel = supabase
@@ -104,6 +132,7 @@ export function BattleArena() {
 
   const handleMatchFound = (matchId: string) => {
     console.log("Match found:", matchId);
+    setBattleId(matchId);
     setShowMatchmaking(false);
   };
 
@@ -123,10 +152,13 @@ export function BattleArena() {
 
   return (
     <div className="p-6 space-y-6">
-      <BattleHeader 
-        timeLeft={timeLeft}
-        onLeave={() => setShowMatchmaking(true)}
-      />
+      <div className="flex justify-between items-center">
+        <BattleHeader 
+          timeLeft={timeLeft}
+          onLeave={() => setShowMatchmaking(true)}
+        />
+        <BattleSpectators battleId={battleId} />
+      </div>
 
       {battleEnded && winner && <BattleWinner winner={winner} />}
 
@@ -151,6 +183,8 @@ export function BattleArena() {
           isWinner={true}
         />
       )}
+
+      <BattleEmotes battleId={battleId} />
     </div>
   );
 }

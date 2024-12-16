@@ -36,6 +36,81 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_emotes: {
+        Row: {
+          battle_id: string
+          created_at: string
+          emote_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          emote_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          emote_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      battle_history: {
+        Row: {
+          battle_duration: number
+          created_at: string
+          id: string
+          loser_id: string
+          loser_votes: number
+          winner_id: string
+          winner_votes: number
+        }
+        Insert: {
+          battle_duration: number
+          created_at?: string
+          id?: string
+          loser_id: string
+          loser_votes?: number
+          winner_id: string
+          winner_votes?: number
+        }
+        Update: {
+          battle_duration?: number
+          created_at?: string
+          id?: string
+          loser_id?: string
+          loser_votes?: number
+          winner_id?: string
+          winner_votes?: number
+        }
+        Relationships: []
+      }
+      battle_spectators: {
+        Row: {
+          battle_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          battle_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          battle_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
