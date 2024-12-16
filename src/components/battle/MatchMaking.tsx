@@ -4,10 +4,12 @@ import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { BattleCategories, BattleCategory } from "./BattleCategories";
 
 export function MatchMaking({ onMatchFound }: { onMatchFound: (matchId: string) => void }) {
   const [isSearching, setIsSearching] = useState(false);
   const [countdown, setCountdown] = useState(30);
+  const [selectedCategory, setSelectedCategory] = useState<BattleCategory | null>(null);
 
   useEffect(() => {
     if (!isSearching) return;
@@ -27,8 +29,9 @@ export function MatchMaking({ onMatchFound }: { onMatchFound: (matchId: string) 
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({
-            user_id: crypto.randomUUID(), // Replace with actual user ID when auth is implemented
+            user_id: crypto.randomUUID(),
             searching: true,
+            category: selectedCategory?.id,
             joined_at: new Date().toISOString(),
           });
         }
@@ -49,7 +52,7 @@ export function MatchMaking({ onMatchFound }: { onMatchFound: (matchId: string) 
       clearInterval(timer);
       supabase.removeChannel(channel);
     };
-  }, [isSearching, onMatchFound]);
+  }, [isSearching, onMatchFound, selectedCategory]);
 
   return (
     <motion.div
@@ -59,27 +62,50 @@ export function MatchMaking({ onMatchFound }: { onMatchFound: (matchId: string) 
     >
       <h2 className="text-2xl font-bold">Style Battle Matchmaking</h2>
       
-      {isSearching ? (
+      {!selectedCategory ? (
+        <div className="w-full max-w-2xl">
+          <h3 className="text-lg font-medium mb-4">Select Battle Category</h3>
+          <BattleCategories 
+            onSelect={(category) => setSelectedCategory(category)}
+          />
+        </div>
+      ) : isSearching ? (
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-2">
             <Loader2 className="h-8 w-8 animate-spin" />
-            <span>Finding opponent... ({countdown}s)</span>
+            <span>Finding opponent for {selectedCategory.name}... ({countdown}s)</span>
           </div>
           <Button
             variant="outline"
-            onClick={() => setIsSearching(false)}
+            onClick={() => {
+              setIsSearching(false);
+              setSelectedCategory(null);
+            }}
           >
             Cancel
           </Button>
         </div>
       ) : (
-        <Button
-          size="lg"
-          onClick={() => setIsSearching(true)}
-          className="px-8"
-        >
-          Find Match
-        </Button>
+        <div className="space-y-4 text-center">
+          <p className="text-muted-foreground">
+            Ready to battle in {selectedCategory.name}?
+          </p>
+          <div className="space-x-4">
+            <Button
+              size="lg"
+              onClick={() => setIsSearching(true)}
+              className="px-8"
+            >
+              Find Match
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setSelectedCategory(null)}
+            >
+              Change Category
+            </Button>
+          </div>
+        </div>
       )}
     </motion.div>
   );
