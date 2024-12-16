@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Fire, Droplet, Mountain, Wind } from "lucide-react";
+import { Sparkles, Wind, Droplet, Mountain } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface BattleCategory {
@@ -17,7 +17,7 @@ const categories: BattleCategory[] = [
     id: "fire",
     name: "Fire Style",
     description: "Bold and dramatic outfits that command attention",
-    icon: Fire,
+    icon: Sparkles, // Changed from Fire to Sparkles
     gradient: "from-orange-500 to-red-600",
     reward: 100
   },
