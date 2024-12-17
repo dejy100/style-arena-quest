@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Gamepad, Trophy, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { TournamentView } from "../tournament/TournamentView";
 
 const container = {
   hidden: { opacity: 0 },
@@ -25,6 +27,12 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ setShowBattle }: QuickActionsProps) {
+  const [showTournament, setShowTournament] = useState(false);
+
+  if (showTournament) {
+    return <TournamentView onBack={() => setShowTournament(false)} />;
+  }
+
   return (
     <motion.div 
       variants={container}
@@ -56,7 +64,11 @@ export function QuickActions({ setShowBattle }: QuickActionsProps) {
           <div className="flex flex-col items-center gap-4">
             <Trophy size={32} className="text-yellow-500" />
             <h2 className="text-xl font-semibold">Tournament</h2>
-            <Button variant="outline" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowTournament(true)}
+            >
               Join Now
               <Badge variant="secondary" className="ml-2">8 slots</Badge>
             </Button>
