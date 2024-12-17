@@ -17,7 +17,7 @@ const categories: BattleCategory[] = [
     id: "fire",
     name: "Fire Style",
     description: "Bold and dramatic outfits that command attention",
-    icon: Sparkles, // Changed from Fire to Sparkles
+    icon: Sparkles,
     gradient: "from-orange-500 to-red-600",
     reward: 100
   },
